@@ -1,25 +1,28 @@
 package main
 
 import (
-	"fmt"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	n := 10
-	exec1(n)
-	n = 20
-	exec2(&n)
-	fmt.Printf("Finish : %d \n", n)
-}
+	logrus.SetLevel(logrus.TraceLevel)
 
-func exec1(num int) {
-	fmt.Printf("exec1 : %d \n", num)
-	num = 100
-	fmt.Printf("exec1 : %d \n", num)
-}
+	logrus.Trace("Traceのログ情報です")
+	logrus.Debug("Debugのログ情報です")
+	logrus.Info("Infoのログ情報です")
 
-func exec2(num *int) {
-	fmt.Printf("exec2 : %d \n", *num)
-	*num = 200
-	fmt.Printf("exec2 : %d \n", *num)
+	logrus.SetLevel(logrus.InfoLevel)
+
+	logrus.Trace("Traceのログ情報です")
+	logrus.Debug("Debugのログ情報です")
+	logrus.Info("Infoのログ情報です")
+
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+
+	logrus.Info("JSONで構造化されたログ出力です")
+
+	logrus.WithFields(logrus.Fields{
+		"code": "400",
+		"message": "エラーが発生しました",
+	}).Info("フィールド付きのログ出力")
 }
