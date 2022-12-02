@@ -1,9 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
 
 func main() {
-	fmt.Println("名前：山田太郎")
-	fmt.Println("電話番号：080-0000-0000")
-	fmt.Println("住所：東京都渋谷区宇田川町40番1号")
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print("Input X:")
+	scanner.Scan()
+	x := scanner.Text()
+
+	fmt.Print(x)
 }
