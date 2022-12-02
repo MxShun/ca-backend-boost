@@ -4,13 +4,23 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Print("Input X:")
-	scanner.Scan()
-	x := scanner.Text()
+	num1 := scanNumber(1)
+	num2 := scanNumber(2)
 
-	fmt.Print(x)
+	fmt.Print(num1 + num2)
+}
+
+func scanNumber(index int) int {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	fmt.Print("Input", index, ":")
+	scanner.Scan()
+	strNum := scanner.Text()
+	num, _ := strconv.Atoi(strNum)
+
+	return num
 }
