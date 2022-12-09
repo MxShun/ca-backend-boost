@@ -1,24 +1,39 @@
 package main
 
 import (
-	"flag"
+	"encoding/csv"
 	"fmt"
-	"time"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
+	"log"
+	"os"
+	"strings"
 )
 
 func main() {
-	var days = flag.Int("days", 0, "日数の入力")
-	var locale = flag.String("locale", "Asia/Tokyo", "ロケールの入力")
-
-	// NOTE: フラグの設定前でもダメだし、利用する後でのダメなのでこの位置
-	// https://zenn.dev/yshingo/articles/263f7fde177b1b
-	flag.Parse()
-
-	location, err := time.LoadLocation(*locale)
+	f, err := os.Open("io/130001_public_facility.csv")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(f)
 
-	var now = time.Now().In(location)
-	fmt.Println(now.AddDate(0, 0, *days))
+	r := csv.NewReader(transform.NewReader(f, japanese.ShiftJIS.NewDecoder()))
+
+	for {
+		records, err := r.Read()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		address := records[8]
+		if !strings.Contains(address, "東京都台東区") {
+			continue
+		}
+		fmt.Println(records)
+	}
 }
