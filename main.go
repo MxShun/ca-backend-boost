@@ -1,35 +1,36 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 )
 
+type payload struct {
+	Text string `json:"text"`
+}
+
 func main() {
-	req, err := http.NewRequest(http.MethodGet, "https://www.cyberagent.co.jp", nil)
+	postUrl := ""
+	reqJson := payload{"5_ハロー世界."}
+	bJson, err := json.Marshal(reqJson)
 	if err != nil {
 		panic(err)
 	}
-
-	// リクエスト送信
+	req, err := http.NewRequest(http.MethodPost, postUrl, bytes.NewBuffer(bJson))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
-	// クローズ
-	defer resp.Body.Close()
-
-	// HTTP ステータスコード
-	fmt.Println(resp.StatusCode)
-	// ヘッダ情報
-	fmt.Println(resp.Header)
-	// レスポンスの長さ
-	fmt.Println(resp.ContentLength)
-	// ボディ部分の読み込み
-	body, err := io.ReadAll(resp.Body)
-	if (err != nil) {
+	byteArray, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		panic(err)
 	}
-	fmt.Println(body)
+	fmt.Println("%#v", string(byteArray))
 }
