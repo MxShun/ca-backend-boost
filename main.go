@@ -10,11 +10,11 @@ func main() {
 	var days = flag.Int("days", 0, "日数の入力")
 	var locale = flag.String("locale", "Asia/Tokyo", "ロケールの入力")
 
-	// flag.Parse()
+	flag.Parse()
 
 	location, err := time.LoadLocation(*locale)
 	if err != nil {
-			panic(err)
+		panic(err)
 	}
 
 	var now = time.Now().In(location)
