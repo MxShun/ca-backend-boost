@@ -1,28 +1,35 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"io"
+	"net/http"
 )
 
 func main() {
-	logrus.SetLevel(logrus.TraceLevel)
+	req, err := http.NewRequest(http.MethodGet, "https://www.cyberagent.co.jp", nil)
+	if err != nil {
+		panic(err)
+	}
 
-	logrus.Trace("Traceのログ情報です")
-	logrus.Debug("Debugのログ情報です")
-	logrus.Info("Infoのログ情報です")
+	// リクエスト送信
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	// クローズ
+	defer resp.Body.Close()
 
-	logrus.SetLevel(logrus.InfoLevel)
-
-	logrus.Trace("Traceのログ情報です")
-	logrus.Debug("Debugのログ情報です")
-	logrus.Info("Infoのログ情報です")
-
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-
-	logrus.Info("JSONで構造化されたログ出力です")
-
-	logrus.WithFields(logrus.Fields{
-		"code": "400",
-		"message": "エラーが発生しました",
-	}).Info("フィールド付きのログ出力")
+	// HTTP ステータスコード
+	fmt.Println(resp.StatusCode)
+	// ヘッダ情報
+	fmt.Println(resp.Header)
+	// レスポンスの長さ
+	fmt.Println(resp.ContentLength)
+	// ボディ部分の読み込み
+	body, err := io.ReadAll(resp.Body)
+	if (err != nil) {
+		panic(err)
+	}
+	fmt.Println(body)
 }
