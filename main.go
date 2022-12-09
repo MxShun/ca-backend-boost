@@ -1,39 +1,50 @@
 package main
 
 import (
-	"encoding/csv"
-	"fmt"
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/transform"
-	"log"
+	"golang.org/x/image/draw"
+	"image"
+	"image/png"
 	"os"
-	"strings"
+	"path/filepath"
 )
 
 func main() {
-	f, err := os.Open("io/130001_public_facility.csv")
+	filePath := "io/img.png"
+
+	// ファイルの拡張値を取得
+	ext := filepath.Ext(filePath)
+
+	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer func(f *os.File) {
 		err := f.Close()
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 	}(f)
 
-	r := csv.NewReader(transform.NewReader(f, japanese.ShiftJIS.NewDecoder()))
+	i, _, err := image.Decode(f)
+	if err != nil {
+		panic(err)
+	}
 
-	for {
-		records, err := r.Read()
+	newImage := image.NewRGBA(image.Rect(0, 0, 300, 300))
+
+	draw.CatmullRom.Scale(newImage, newImage.Bounds(), i, i.Bounds(), draw.Over, nil)
+	newFile, err := os.Create("io/output" + ext)
+	if err != nil {
+		panic(err)
+	}
+	defer func(newFile *os.File) {
+		err := newFile.Close()
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
+	}(newFile)
 
-		address := records[8]
-		if !strings.Contains(address, "東京都台東区") {
-			continue
-		}
-		fmt.Println(records)
+	if err := png.Encode(newFile, newImage); err != nil {
+		panic(err)
 	}
 }
