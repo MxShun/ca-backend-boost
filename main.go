@@ -1,32 +1,23 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
-	"text/template"
 )
 
-type TemplateIndex struct {
-	Title string
-	Body  string
-}
-
 func main() {
-	http.HandleFunc("/", handlerIndex)
+	http.HandleFunc("/input", handleQuery)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}
 }
 
-func handlerIndex(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("index.html")
-	if err != nil {
-		panic(err)
-	}
+func handleQuery(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.Query())
 
-	templateIndex := TemplateIndex{"タイトル", "本文"}
+	name := r.URL.Query().Get("name")
+	price := r.URL.Query().Get("price")
 
-	if err := t.Execute(w, templateIndex); err != nil {
-		log.Fatalf("テンプレートの埋め込みエラー: %v", err)
-	}
+	fmt.Println(name, price)
+	fmt.Fprint(w, "OK")
 }
