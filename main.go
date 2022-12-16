@@ -1,18 +1,32 @@
 package main
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+	"text/template"
+)
+
+type TemplateIndex struct {
+	Title string
+	Body  string
+}
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		body := []byte("<html><head><title>Go web service</title></head><body>HTMLのトップページです</body></html>")
-		w.Write(body)
-	})
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		body := []byte("<html><head><title>Go web service</title></head><body>Pong</body></html>")
-		w.Write(body)
-	})
-	err := http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/", handlerIndex)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		panic(err)
+	}
+}
+
+func handlerIndex(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("index.html")
 	if err != nil {
 		panic(err)
+	}
+
+	templateIndex := TemplateIndex{"タイトル", "本文"}
+
+	if err := t.Execute(w, templateIndex); err != nil {
+		log.Fatalf("テンプレートの埋め込みエラー: %v", err)
 	}
 }
