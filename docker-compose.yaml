@@ -1,0 +1,25 @@
+version: '3'
+services:
+  db:
+    image: postgres:14.5
+    container_name: postgres
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pgdb
+    ports:
+      - 5432:5432
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 7001:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@exapmle.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    depends_on:
+      - db
