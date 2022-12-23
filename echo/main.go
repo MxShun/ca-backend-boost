@@ -1,14 +1,19 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
+
+type ResponseJson struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
 
 var (
 	// DefaultHTTPGetAddress Default Address
@@ -40,8 +45,11 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{}, ErrNoIP
 	}
 
+	var responseJson = ResponseJson{"OK", "GoをSAMで利用する準備ができました"}
+	var responseBytes, _ = json.Marshal(responseJson)
+
 	return events.APIGatewayProxyResponse{
-		Body:       fmt.Sprintf("Hello, %v", string(ip)),
+		Body:       string(responseBytes),
 		StatusCode: 200,
 	}, nil
 }
