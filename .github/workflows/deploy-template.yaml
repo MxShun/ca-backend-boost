@@ -14,8 +14,8 @@ Resources:
   CustomFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: echo/ # custom
-      Handler: echo # custom
+      CodeUri: evacuation/ # custom
+      Handler: evacuation # custom
       Runtime: go1.x
       Architectures:
         - x86_64
@@ -23,7 +23,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /echo # custom
+            Path: /evacuation # custom
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
@@ -36,7 +36,7 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   CustomAPI:
     Description: "API Gateway endpoint URL for Prod environment for Custom Function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/echo/" # custom
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/evacuation/" # custom
   CustomFunction:
     Description: "Lambda Function ARN"
     Value: !GetAtt CustomFunction.Arn
