@@ -8,7 +8,6 @@ This is a sample template for ca-backend-boost - Below is a brief explanation of
 ├── README.md                   <-- This instructions file
 ├── evacuation                  <-- Source code for a lambda function
 │   ├── main.go                 <-- Lambda function code
-│   └── main_test.go            <-- Unit tests
 └── template.yaml
 ```
 
@@ -83,13 +82,6 @@ The command will package and deploy your application to AWS, with a series of pr
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
 
-### Testing
-
-We use `testing` package that is built-in in Golang and you can simply run the following command to run our tests:
-
-```shell
-go test -v ./evacuation/
-```
 # Appendix
 
 ### Golang installation
