@@ -45,7 +45,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{}, ErrNoIP
 	}
 
-	var responseJson = ResponseJson{"OK", "GoをSAMで利用する準備ができました"}
+	var responseJson = ResponseJson{"OK", "GoをSAMで利用する準備ができました！"}
 	var responseBytes, _ = json.Marshal(responseJson)
 
 	return events.APIGatewayProxyResponse{
