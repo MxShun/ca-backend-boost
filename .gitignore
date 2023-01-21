@@ -17,4 +17,5 @@
 !.vscode/launch.json
 .idea/
 .aws-sam/
+data/
 samconfig.toml
