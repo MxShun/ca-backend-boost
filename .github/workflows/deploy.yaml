@@ -40,4 +40,5 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-      - run: make deploy
+      - run: sam build
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --s3-bucket ${{ secrets.AMAZON_S3_BUCKET }} --stack-name techboost-05-evacuation
