@@ -19,3 +19,4 @@
 .aws-sam/
 data/
 samconfig.toml
+.DS_Store
