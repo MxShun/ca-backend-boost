@@ -1,53 +1,93 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"net/http"
+	"log"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-type ResponseJson struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
+const (
+	DataSourceName = "postgres://admin:password@host.docker.internal:5432/pgdb"
+)
+
+type EvacuationArea struct {
+	Name       string
+	Address    string
+	Flood      bool
+	Landslide  bool
+	Surge      bool
+	Earthquake bool
+	Tsunami    bool
+	Fire       bool
+	Inundation bool
+	Volcano    bool
 }
 
-var (
-	// DefaultHTTPGetAddress Default Address
-	DefaultHTTPGetAddress = "https://checkip.amazonaws.com"
+type ResponseJson struct {
+	Name       string `json:"避難場所名"`
+	Address    string `json:"所在地住所"`
+	Flood      string `json:"洪水"`
+	Landslide  string `json:"崖崩れ"`
+	Surge      string `json:"高潮"`
+	Earthquake string `json:"地震"`
+	Tsunami    string `json:"津波"`
+	Fire       string `json:"大規模な家事"`
+	Inundation string `json:"内部氾濫"`
+	Volcano    string `json:"火山活動"`
+}
 
-	// ErrNoIP No IP found in response
-	ErrNoIP = errors.New("No IP in HTTP response")
-
-	// ErrNon200Response non 200 status code in response
-	ErrNon200Response = errors.New("Non 200 Response found")
-)
+func prettifyBool(b bool) string {
+	if b {
+		return "◯"
+	}
+	return "✗"
+}
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	resp, err := http.Get(DefaultHTTPGetAddress)
+	requestName := request.QueryStringParameters["name"]
+	hasRequestName := len(requestName) > 0
+	requestAddress := request.QueryStringParameters["address"]
+	hasRequestAddress := len(requestAddress) > 0
+
+	db, err := sql.Open("pgx", DataSourceName)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		log.Fatal(err)
 	}
-
-	if resp.StatusCode != 200 {
-		return events.APIGatewayProxyResponse{}, ErrNon200Response
-	}
-
-	ip, err := ioutil.ReadAll(resp.Body)
+	rows, err := db.Query("select * from evacuation_area")
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		log.Fatal(err)
 	}
 
-	if len(ip) == 0 {
-		return events.APIGatewayProxyResponse{}, ErrNoIP
+	var response []ResponseJson
+	for rows.Next() {
+		row := EvacuationArea{}
+		if err := rows.Scan(&row.Name, &row.Address, &row.Flood, &row.Landslide, &row.Surge, &row.Earthquake, &row.Tsunami, &row.Fire, &row.Inundation, &row.Volcano); err != nil {
+			log.Fatal(err)
+		}
+
+		if (hasRequestName && strings.Contains(row.Name, requestName)) ||
+			(hasRequestAddress && strings.Contains(row.Address, requestAddress)) {
+			response = append(response, ResponseJson{
+				row.Name,
+				row.Address,
+				prettifyBool(row.Flood),
+				prettifyBool(row.Landslide),
+				prettifyBool(row.Surge),
+				prettifyBool(row.Earthquake),
+				prettifyBool(row.Tsunami),
+				prettifyBool(row.Fire),
+				prettifyBool(row.Inundation),
+				prettifyBool(row.Volcano),
+			})
+		}
 	}
 
-	var responseJson = ResponseJson{"OK", "GoをSAMで利用する準備ができました！"}
-	var responseBytes, _ = json.Marshal(responseJson)
-
+	var responseBytes, _ = json.Marshal(response)
 	return events.APIGatewayProxyResponse{
 		Body:       string(responseBytes),
 		StatusCode: 200,

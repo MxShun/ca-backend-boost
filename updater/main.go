@@ -20,7 +20,7 @@ import (
 const (
 	UpdateFileUrl  = "https://www.opendata.metro.tokyo.lg.jp/soumu/R4/130001_evacuation_area.csv"
 	LocalFilePath  = "evacuation_area.csv"
-	DataSourceName = "postgres://admin:password@localhost:5432/pgdb"
+	DataSourceName = "postgres://admin:password@host.docker.internal/pgdb"
 )
 
 func shouldUpdate() bool {
