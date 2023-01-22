@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/csv"
+	"fmt"
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 	"io"
@@ -11,17 +12,19 @@ import (
 	"os"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 const (
-	updateFileUrl  = "https://www.opendata.metro.tokyo.lg.jp/soumu/R4/130001_evacuation_area.csv"
-	localFilePath  = "evacuation_area.csv"
-	dataSourceName = "postgres://admin:password@localhost:5432/pgdb"
+	UpdateFileUrl  = "https://www.opendata.metro.tokyo.lg.jp/soumu/R4/130001_evacuation_area.csv"
+	LocalFilePath  = "evacuation_area.csv"
+	DataSourceName = "postgres://admin:password@localhost:5432/pgdb"
 )
 
 func shouldUpdate() bool {
-	resp, err := http.Get(updateFileUrl)
+	resp, err := http.Get(UpdateFileUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,7 +48,7 @@ func shouldUpdate() bool {
 }
 
 func downloadFile() {
-	resp, _ := http.Get(updateFileUrl)
+	resp, _ := http.Get(UpdateFileUrl)
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -53,7 +56,7 @@ func downloadFile() {
 		}
 	}(resp.Body)
 
-	out, _ := os.Create(localFilePath)
+	out, _ := os.Create(LocalFilePath)
 	defer func(out *os.File) {
 		err := out.Close()
 		if err != nil {
@@ -68,7 +71,7 @@ func downloadFile() {
 }
 
 func loadFile() [][]string {
-	f, err := os.Open(localFilePath)
+	f, err := os.Open(LocalFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,7 +99,7 @@ func toBool(str string) bool {
 }
 
 func update(rows [][]string) (counter int) {
-	db, err := sql.Open("pgx", dataSourceName)
+	db, err := sql.Open("pgx", DataSourceName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,13 +127,24 @@ func update(rows [][]string) (counter int) {
 	return counter
 }
 
-func main() {
+func invoke() (events.APIGatewayProxyResponse, error) {
 	if !shouldUpdate() {
-		log.Println("no updates")
-		return
+		return events.APIGatewayProxyResponse{
+			Body:       "no updates",
+			StatusCode: 200,
+		}, nil
 	}
+
 	downloadFile()
 	data := loadFile()
 	count := update(data)
-	log.Printf("%d records updated", count)
+
+	return events.APIGatewayProxyResponse{
+		Body:       fmt.Sprintf("%d records updated", count),
+		StatusCode: 200,
+	}, nil
+}
+
+func main() {
+	lambda.Start(invoke)
 }
